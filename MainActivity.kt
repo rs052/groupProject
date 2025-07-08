@@ -3,10 +3,12 @@ package com.example.groupproject
 import android.R
 import android.content.res.Resources
 import android.os.Bundle
+import android.os.CountDownTimer
 // delete keyEvent when movement ctrls implemented
 import android.view.KeyEvent
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
+import android.widget.SeekBar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -26,7 +28,18 @@ class MainActivity : AppCompatActivity() {
 //            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
 //            insets
 //        }
-        var mainLayout : RelativeLayout = RelativeLayout(this)
+        var mainLayout: RelativeLayout = RelativeLayout(this)
+
+        val seekBar = SeekBar(this)
+        seekBar.max = 50
+        seekBar.progress = 10
+        val seekBarParams = RelativeLayout.LayoutParams(500, 300)
+        seekBarParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        seekBarParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
+        seekBarParams.setMargins(0, 50, 0, 50)
+        seekBar.layoutParams = seekBarParams
+        seekBar.setOnSeekBarChangeListener(SpeedChangeListener())
+
 
         val displayMetrics = Resources.getSystem().displayMetrics
         var width = displayMetrics.widthPixels
@@ -40,15 +53,17 @@ class MainActivity : AppCompatActivity() {
         progressParams.setMargins(0, 50, 0, 50)
         progressBar.layoutParams = progressParams
 
+
         gameView = GameView(this, width, height, progressBar)
         caterpillar = gameView.getCaterpillar()
         mainLayout.addView(gameView)
         mainLayout.addView(progressBar)
+        mainLayout.addView(seekBar)
         setContentView(mainLayout)
 
         var timer = Timer()
         var task = GameTimerTask(this)
-        timer.schedule(task,0L, GameView.DELTA_TIME.toLong())
+        timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
     }
 
     fun updateModel() {
@@ -70,5 +85,16 @@ class MainActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_DPAD_RIGHT -> caterpillar.setDirection("right")
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    inner class SpeedChangeListener : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            caterpillar.setSpeed(progress)
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+
     }
 }
