@@ -93,12 +93,12 @@ class Caterpillar {
         if (headRect.left < 0 || headRect.right > screenWidth || headRect.bottom > screenHeight || headRect.top < 0) {
             headRect.offset(0,0)
             gameOver = true
+            reset()
         }
 
         if (doesInterset()) {
             getNewLeafPos()
             increaseLevel()
-            reset()
         }
     }
 
