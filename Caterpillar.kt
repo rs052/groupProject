@@ -1,7 +1,9 @@
 package com.example.groupproject
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Rect
+import android.util.Log
 
 class Caterpillar {
     private lateinit var headRect : Rect
@@ -13,14 +15,18 @@ class Caterpillar {
     private var screenHeight : Float = 0f
     private var leafX : Int = 0
     private var leafY : Int = 0
-    private var lvl : Int = 6
+    private var lvl : Int = 0
     lateinit var bx : ArrayList<Float>
     lateinit var by : ArrayList<Float>
     private var rad : Float = 0f
+    lateinit var pref : SharedPreferences
+    private var bestLevel : Int = 0
 
 
 
-    constructor(headRect : Rect, leafRect : Rect, width: Int, height: Int, rad : Float) {        this.headRect = headRect
+    constructor(context: Context, headRect : Rect, leafRect : Rect, width: Int, height: Int, rad : Float) {
+        pref = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+        this.headRect = headRect
         this.leafRect = leafRect
         this.screenWidth = width.toFloat()
         this.screenHeight = height.toFloat()
@@ -28,6 +34,11 @@ class Caterpillar {
         this.rad = rad
         bx = ArrayList<Float>()
         by = ArrayList<Float>()
+        bestLevel = pref.getInt(PREFERENCE_LEVEL,0)
+    }
+
+    fun updateHeadRect(newRect: Rect) {
+        headRect = Rect(newRect)
     }
 
     fun setSpeed (newSpeed : Int ) {
@@ -52,8 +63,8 @@ class Caterpillar {
     }
 
     fun getNewLeafPos () {
-        leafX = (0..screenWidth.toInt()).random()
-        leafY = (0..screenHeight.toInt()).random()
+        leafX = (20..screenWidth.toInt()).random()
+        leafY = (-150..screenHeight.toInt()).random()
         leafRect.set(leafX, leafY, leafX + leafRect.width(), leafY + leafRect.height())
     }
 
@@ -79,7 +90,7 @@ class Caterpillar {
 
     fun moveCaterpillar() {
         if (gameOver) {
-//            Log.w("MainActivity", "game over")
+            Log.w("MainActivity", "game over")
             return
         }
 
@@ -98,6 +109,7 @@ class Caterpillar {
 
         if (headRect.left < 0 || headRect.right > screenWidth || headRect.bottom > screenHeight || headRect.top < 0) {
             headRect.offset(0,0)
+            saveBestLevel()
             gameOver = true
         }
 
@@ -121,6 +133,7 @@ class Caterpillar {
             }
 
             if ((dx * dx + dy * dy) <= rad * rad) {
+                saveBestLevel()
                 gameOver = true
             }
         }
@@ -138,5 +151,24 @@ class Caterpillar {
 
     fun reset() {
         lvl = 0
+        gameOver = false
+        getNewLeafPos()
+        setDirection("up")
+        Log.w("MainActivity", "reseting")
+    }
+
+    fun saveBestLevel() {
+        Log.w("MainActivity", "lvl = " + lvl)
+        Log.w("MainActivity", "bestLevel = " + bestLevel)
+        if (lvl > bestLevel) {
+            Log.w("MainActivity", "new highscore!!")
+            var editor = pref.edit()
+            editor.putInt(PREFERENCE_LEVEL, lvl)
+            editor.commit()
+        }
+    }
+
+    companion object {
+        private const val PREFERENCE_LEVEL = "bestLevel"
     }
 }

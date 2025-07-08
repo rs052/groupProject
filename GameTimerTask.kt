@@ -1,5 +1,6 @@
 package com.example.groupproject
 
+import android.graphics.Rect
 import java.util.TimerTask
 
 class GameTimerTask : TimerTask {
@@ -13,4 +14,5 @@ class GameTimerTask : TimerTask {
         activity.updateModel()
         activity.updateView()
     }
-}
+
+ }

@@ -49,24 +49,20 @@ class GameView : View {
         leafBitmap = BitmapFactory.decodeResource(resources, R.drawable.leaf)
         leafRect = Rect(0,0,leafSize,leafSize)
         rad = headSize / 4f
-        caterpillar = Caterpillar(headRect, leafRect, width, height,rad)
+        caterpillar = Caterpillar(context, headRect, leafRect, width, height,rad)
     }
 
-    fun initCaterpillar() {
-        if (::caterpillar.isInitialized) return }
 
     fun updateProgressBar() {
         progressBar.progress = caterpillar.getLevel()
     }
 
     // used this to set the size of the caterpillar bitmap
-    // used this to set the size of the caterpillar bitmap
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         val centerX = width / 2 - headSize / 2
         val centerY = height / 2 - headSize / 2
         headRect.set(centerX, centerY, centerX + headSize, centerY + headSize)
-        caterpillar = Caterpillar(headRect, leafRect, width, height, rad)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -154,6 +150,15 @@ class GameView : View {
 
     fun getCaterpillar() : Caterpillar {
         return caterpillar
+    }
+
+    fun resetPosition() {
+        var x = width / 2 - headSize / 2
+        var y = height / 2 - headSize / 2
+        headRect.set(x, y, x + headSize, y + headSize)
+        bx.clear()
+        by.clear()
+        updateBody()
     }
 
     companion object {

@@ -4,8 +4,10 @@ import android.R
 import android.content.res.Resources
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.view.GestureDetector
 // delete keyEvent when movement ctrls implemented
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.SeekBar
@@ -18,16 +20,15 @@ import java.util.Timer
 class MainActivity : AppCompatActivity() {
     private lateinit var gameView: GameView
     private lateinit var caterpillar: Caterpillar
+    private lateinit var detector: GestureDetector
+    private var gameStart : Boolean = false
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-//        setContentView(R.layout.activity_main)
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
+
         var mainLayout: RelativeLayout = RelativeLayout(this)
 
         val seekBar = SeekBar(this)
@@ -59,15 +60,6 @@ class MainActivity : AppCompatActivity() {
 
         gameView = GameView(this, width, height, progressBar)
 
-        gameView.viewTreeObserver.addOnGlobalLayoutListener {
-            gameView.initCaterpillar()
-            caterpillar = gameView.getCaterpillar()
-
-            val timer = Timer()
-            val task = GameTimerTask(this)
-            timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
-        }
-
         caterpillar = gameView.getCaterpillar()
         mainLayout.addView(gameView)
         mainLayout.addView(progressBar)
@@ -77,19 +69,44 @@ class MainActivity : AppCompatActivity() {
         var timer = Timer()
         var task = GameTimerTask(this)
         timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
+
+        var handler = TouchHandler()
+        detector = GestureDetector(this, handler)
+        detector.setOnDoubleTapListener(handler)
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event != null) {
+            detector.onTouchEvent(event)
+        }
+        return super.onTouchEvent(event)
+    }
+
+    inner class TouchHandler : GestureDetector.SimpleOnGestureListener() {
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+            if (caterpillar.isGameOver()) {
+                caterpillar.reset()
+                gameView.resetPosition()
+                gameStart = true
+                gameView.postInvalidate()
+            } else if (!gameStart) {
+                gameStart = true
+            }
+            return true
+        }
     }
 
     fun updateModel() {
-        caterpillar.moveCaterpillar() // move caterpillar head
-        gameView.updateBody() // move caterpillar body
+        if (gameStart) {
+            caterpillar.moveCaterpillar() // move caterpillar head
+            gameView.updateBody() // move caterpillar body
+        }
     }
 
     fun updateView() {
         gameView.postInvalidate()
     }
 
-    // temp way to test caterpillar movement
-    // delete when movement ctrls implemented
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP -> caterpillar.setDirection("up")
@@ -110,4 +127,7 @@ class MainActivity : AppCompatActivity() {
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
 
     }
+
+
+
 }
