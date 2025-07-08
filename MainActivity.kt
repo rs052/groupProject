@@ -1,8 +1,12 @@
 package com.example.groupproject
 
+import android.R
+import android.content.res.Resources
 import android.os.Bundle
 // delete keyEvent when movement ctrls implemented
 import android.view.KeyEvent
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,16 +20,31 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+//        setContentView(R.layout.activity_main)
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+//            insets
+//        }
+        var mainLayout : RelativeLayout = RelativeLayout(this)
 
-        gameView = GameView(this)
+        val displayMetrics = Resources.getSystem().displayMetrics
+        var width = displayMetrics.widthPixels
+        var height = displayMetrics.heightPixels
+        val progressBar = ProgressBar(this, null, R.attr.progressBarStyleHorizontal)
+        progressBar.max = 10
+        progressBar.progress = 0
+        val progressParams = RelativeLayout.LayoutParams(500, 200)
+        progressParams.addRule(RelativeLayout.ALIGN_PARENT_TOP)
+        progressParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
+        progressParams.setMargins(0, 50, 0, 50)
+        progressBar.layoutParams = progressParams
+
+        gameView = GameView(this, width, height, progressBar)
         caterpillar = gameView.getCaterpillar()
-        setContentView(gameView)
+        mainLayout.addView(gameView)
+        mainLayout.addView(progressBar)
+        setContentView(mainLayout)
 
         var timer = Timer()
         var task = GameTimerTask(this)

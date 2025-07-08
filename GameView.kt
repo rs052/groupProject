@@ -8,9 +8,12 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
+import android.widget.ProgressBar
 
 class GameView : View {
     private lateinit var paint : Paint
+    private lateinit var progressBar: ProgressBar
+
     private lateinit var headRect : Rect
     private lateinit var head : Bitmap
     private lateinit var leafBitmap : Bitmap
@@ -34,8 +37,9 @@ class GameView : View {
     private var leafSize : Int = 150
 
 
-    constructor(context: Context, width: Int, height: Int) : super(context) {
+    constructor(context: Context, width: Int, height: Int, progressBar: ProgressBar) : super(context) {
         paint = Paint()
+        this.progressBar = progressBar
         paint.color = Color.BLACK
         paint.isAntiAlias = true
         head = BitmapFactory.decodeResource(resources, R.drawable.caterpillarhead)
@@ -46,6 +50,11 @@ class GameView : View {
         leafRect = Rect(0,0,leafSize,leafSize)
 
         caterpillar = Caterpillar(headRect, leafRect, width, height)
+    }
+
+
+    fun updateProgressBar() {
+        progressBar.progress = caterpillar.getLevel()
     }
 
     // used this to set the size of the caterpillar bitmap
@@ -63,6 +72,7 @@ class GameView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        updateProgressBar()
         canvas.drawBitmap(leafBitmap, null, leafRect, paint)
 
         // set color
