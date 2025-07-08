@@ -13,13 +13,16 @@ class GameView : View {
     private lateinit var paint : Paint
     private lateinit var headRect : Rect
     private lateinit var head : Bitmap
+    private lateinit var leafBitmap : Bitmap
     private lateinit var caterpillar : Caterpillar
+    private lateinit var leafRect : Rect
+
     private var c1 : String = ""
     private var c2 : String = ""
     // size of the head of the caterpillar
     private var headSize : Int = 250
     // lvl = size of caterpillar
-    private var lvl : Int = 20
+    private var lvl : Int = 6
     // caterpillar size variables
     private var rad : Float = 0f
     private var cx : Float = 0f
@@ -27,7 +30,10 @@ class GameView : View {
     // arraylist to track the path of the caterpillar
     private var bx = ArrayList<Float>()
     private var by = ArrayList<Float>()
-    
+    // size of leaf
+    private var leafSize : Int = 150
+
+
     constructor(context: Context, width: Int, height: Int) : super(context) {
         paint = Paint()
         paint.color = Color.BLACK
@@ -36,7 +42,10 @@ class GameView : View {
         // changed to height instead of 0 for top
         headRect = Rect(0,height,headSize,headSize)
 
-        caterpillar = Caterpillar(headRect, width, height)
+        leafBitmap = BitmapFactory.decodeResource(resources, R.drawable.leaf)
+        leafRect = Rect(0,0,leafSize,leafSize)
+
+        caterpillar = Caterpillar(headRect, leafRect, width, height)
     }
 
     // used this to set the size of the caterpillar bitmap
@@ -54,9 +63,11 @@ class GameView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        canvas.drawBitmap(leafBitmap, null, leafRect, paint)
+
         // set color
         // used so the dark green circle is always at the last part
-        if (lvl % 2 == 0) {
+        if (caterpillar.getLevel() % 2 == 0) {
             c1 = DARK_GREEN
             c2 = LIGHT_GREEN
         }
@@ -66,7 +77,7 @@ class GameView : View {
         }
 
         // at lvl = 0 its the head and a single circle for the body
-        while (bx.size < lvl + 1) {
+        while (bx.size < caterpillar.getLevel() + 1) {
             updateBody()
         }
 
@@ -89,7 +100,7 @@ class GameView : View {
         canvas.restore()
 
         // build body
-        for (i in 0..lvl) {
+        for (i in 0..caterpillar.getLevel()) {
             if ( i % 2 == 0) {
                 paint.color = Color.parseColor(c1)
             } else {
@@ -102,7 +113,10 @@ class GameView : View {
     // used to give a trailing affect on caterpillar body
     fun updateBody() {
         // space from head to start of body
-        var space = headSize / 10f
+        if (caterpillar.isGameOver()) {
+            return
+        }
+        var space = headSize / 4f
 
         if (caterpillar.getDirection() == "up") {
             cx = headRect.centerX().toFloat()
@@ -124,7 +138,7 @@ class GameView : View {
         by.add(0, cy)
 
         // keep caterpillar length to lvl
-        while (bx.size > lvl + 1) {
+        while (bx.size > caterpillar.getLevel() + 1) {
             bx.removeAt(bx.size - 1)
             by.removeAt(by.size - 1)
         }
