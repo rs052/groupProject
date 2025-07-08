@@ -56,7 +56,18 @@ class MainActivity : AppCompatActivity() {
         progressBar.layoutParams = progressParams
 
 
+
         gameView = GameView(this, width, height, progressBar)
+
+        gameView.viewTreeObserver.addOnGlobalLayoutListener {
+            gameView.initCaterpillar()
+            caterpillar = gameView.getCaterpillar()
+
+            val timer = Timer()
+            val task = GameTimerTask(this)
+            timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
+        }
+
         caterpillar = gameView.getCaterpillar()
         mainLayout.addView(gameView)
         mainLayout.addView(progressBar)

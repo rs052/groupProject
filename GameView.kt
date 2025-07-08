@@ -48,33 +48,32 @@ class GameView : View {
 
         leafBitmap = BitmapFactory.decodeResource(resources, R.drawable.leaf)
         leafRect = Rect(0,0,leafSize,leafSize)
-
-        caterpillar = Caterpillar(headRect, leafRect, width, height)
+        rad = headSize / 4f
+        caterpillar = Caterpillar(headRect, leafRect, width, height,rad)
     }
 
+    fun initCaterpillar() {
+        if (::caterpillar.isInitialized) return }
 
     fun updateProgressBar() {
         progressBar.progress = caterpillar.getLevel()
     }
 
     // used this to set the size of the caterpillar bitmap
+    // used this to set the size of the caterpillar bitmap
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-
-        // get the radius for body so it can be similar size
-        rad = headSize / 3.5f
-
-        var left = (w - headSize) / 2
-        var top = (h - headSize) / 2
-        headRect.set(left, top, left + headSize, top + headSize)
+        val centerX = width / 2 - headSize / 2
+        val centerY = height / 2 - headSize / 2
+        headRect.set(centerX, centerY, centerX + headSize, centerY + headSize)
+        caterpillar = Caterpillar(headRect, leafRect, width, height, rad)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        updateProgressBar()
         canvas.drawBitmap(leafBitmap, null, leafRect, paint)
-
+        updateProgressBar()
         // set color
         // used so the dark green circle is always at the last part
         if (caterpillar.getLevel() % 2 == 0) {
@@ -120,12 +119,10 @@ class GameView : View {
         }
     }
 
+
     // used to give a trailing affect on caterpillar body
     fun updateBody() {
         // space from head to start of body
-        if (caterpillar.isGameOver()) {
-            return
-        }
         var space = headSize / 4f
 
         if (caterpillar.getDirection() == "up") {
@@ -146,13 +143,15 @@ class GameView : View {
         }
         bx.add(0, cx)
         by.add(0, cy)
-
         // keep caterpillar length to lvl
         while (bx.size > caterpillar.getLevel() + 1) {
             bx.removeAt(bx.size - 1)
             by.removeAt(by.size - 1)
         }
+        // send bx and by to caterpillar
+        caterpillar.setBodyCoords(bx,by)
     }
+
     fun getCaterpillar() : Caterpillar {
         return caterpillar
     }
