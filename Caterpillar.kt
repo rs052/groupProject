@@ -35,6 +35,7 @@ class Caterpillar {
         bx = ArrayList<Float>()
         by = ArrayList<Float>()
         bestLevel = pref.getInt(PREFERENCE_LEVEL,0)
+
     }
 
     fun updateHeadRect(newRect: Rect) {
@@ -50,21 +51,17 @@ class Caterpillar {
         return lvl
     }
 
+    fun getBestScore() : Int {
+        return bestLevel
+    }
+
     fun increaseLevel () {
         lvl++
     }
 
-    fun getLeafX () : Int {
-        return leafX
-    }
-
-    fun getLeafY () : Int {
-        return leafY
-    }
-
     fun getNewLeafPos () {
-        leafX = (20..screenWidth.toInt()).random()
-        leafY = (-150..screenHeight.toInt()).random()
+        leafX = (20..screenWidth.toInt() - 150).random()
+        leafY = (20..screenHeight.toInt() - 150).random()
         leafRect.set(leafX, leafY, leafX + leafRect.width(), leafY + leafRect.height())
     }
 
@@ -79,6 +76,9 @@ class Caterpillar {
     fun isGameOver () : Boolean {
         return gameOver
     }
+    fun setGameOver (value : Boolean) {
+        gameOver = value
+    }
 
     fun doesInterset() : Boolean {
         val overlap = Rect()
@@ -90,7 +90,7 @@ class Caterpillar {
 
     fun moveCaterpillar() {
         if (gameOver) {
-            Log.w("MainActivity", "game over")
+//            Log.w("MainActivity", "game over")
             return
         }
 
@@ -108,8 +108,8 @@ class Caterpillar {
         }
 
         if (headRect.left < 0 || headRect.right > screenWidth || headRect.bottom > screenHeight || headRect.top < 0) {
-            headRect.offset(0,0)
             saveBestLevel()
+            headRect.offset(0,0)
             gameOver = true
         }
 
@@ -150,7 +150,6 @@ class Caterpillar {
     }
 
     fun reset() {
-        lvl = 0
         gameOver = false
         getNewLeafPos()
         setDirection("up")

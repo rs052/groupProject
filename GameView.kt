@@ -52,11 +52,14 @@ class GameView : View {
         caterpillar = Caterpillar(context, headRect, leafRect, width, height,rad)
     }
 
+    fun initCaterpillar() {
+        if (::caterpillar.isInitialized) return }
 
     fun updateProgressBar() {
         progressBar.progress = caterpillar.getLevel()
     }
 
+    // used this to set the size of the caterpillar bitmap
     // used this to set the size of the caterpillar bitmap
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
