@@ -27,15 +27,16 @@ class GameView : View {
     // arraylist to track the path of the caterpillar
     private var bx = ArrayList<Float>()
     private var by = ArrayList<Float>()
-
-    constructor(context: Context) : super(context) {
+    
+    constructor(context: Context, width: Int, height: Int) : super(context) {
         paint = Paint()
         paint.color = Color.BLACK
         paint.isAntiAlias = true
         head = BitmapFactory.decodeResource(resources, R.drawable.caterpillarhead)
-        headRect = Rect(0,0,headSize,headSize)
+        // changed to height instead of 0 for top
+        headRect = Rect(0,height,headSize,headSize)
 
-        caterpillar = Caterpillar(headRect)
+        caterpillar = Caterpillar(headRect, width, height)
     }
 
     // used this to set the size of the caterpillar bitmap
