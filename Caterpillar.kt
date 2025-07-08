@@ -25,6 +25,10 @@ class Caterpillar {
         getNewLeafPos()
     }
 
+    fun setSpeed (newSpeed : Int ) {
+        speed = newSpeed
+    }
+
     fun setDirection(s : String) {
         direction = s
     }
@@ -94,6 +98,11 @@ class Caterpillar {
         if (doesInterset()) {
             getNewLeafPos()
             increaseLevel()
+            reset()
         }
+    }
+
+    fun reset() {
+        lvl = 0
     }
 }
