@@ -12,6 +12,7 @@ import android.view.GestureDetector
 // delete keyEvent when movement ctrls implemented
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
@@ -29,6 +30,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.util.Timer
 import java.util.TimerTask
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 
 class MainActivity : AppCompatActivity() {
     private lateinit var gameView: GameView
@@ -39,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private var emailDialog : Boolean = false
     private lateinit var detector: GestureDetector
     private var gameStart : Boolean = false
+    private lateinit var adView : AdView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +62,17 @@ class MainActivity : AppCompatActivity() {
         var database : FirebaseDatabase = FirebaseDatabase.getInstance( )
         leaderboard = database.getReference("leaderboard")
 
+        adView = AdView(this)
+        adView.id = View.generateViewId()
+        var adSize : AdSize = AdSize( AdSize.FULL_WIDTH, AdSize.AUTO_HEIGHT )
+        adView.setAdSize( adSize )
+        adView.adUnitId = "ca-app-pub-3940256099942544/6300978111"
+        val adParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
+        adParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        var builder : AdRequest.Builder = AdRequest.Builder( )
+        var request : AdRequest = builder.build()
+        mainLayout.addView(adView, adParams)
+        adView.loadAd(request)
 
         val seekBar = SeekBar(this)
         seekBar.max = 50
@@ -213,7 +230,7 @@ class MainActivity : AppCompatActivity() {
             if (playerName.isNotEmpty()) {
                 leaderboard.child(playerName).setValue(score)
 
-                 showEmailDialog(caterpillar.getLevel(), playerName) // ask for email if user enter name
+                showEmailDialog(caterpillar.getLevel(), playerName) // ask for email if user enter name
             }
             dialog.dismiss()
         }
@@ -228,6 +245,8 @@ class MainActivity : AppCompatActivity() {
 
             for (child in data.children) {
                 val name = child.key ?: continue
+                Log.w("DEBUG", name)
+
                 val score = child.getValue(Int::class.java) ?: 0
                 namesList.add(name)
                 scoresList.add(score)
@@ -241,7 +260,6 @@ class MainActivity : AppCompatActivity() {
     private fun showLeaderboardDialog(names: ArrayList<String>, scores: ArrayList<Int>) {
         var sb : String= ""
         sb += "Leaderboard:\n"
-        // Sort by score descending with zipped lists
         val combined = names.zip(scores).sortedWith(compareByDescending { it.second }).take(5)
 
         for ((index, data) in combined.withIndex()) {
