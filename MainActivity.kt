@@ -4,11 +4,13 @@ import android.R
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.GestureDetector
+import android.view.Gravity
 // delete keyEvent when movement ctrls implemented
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -17,6 +19,7 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -45,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var detector: GestureDetector
     private var gameStart : Boolean = false
     private lateinit var adView : AdView
-
+    private lateinit var startxt: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,19 +105,53 @@ class MainActivity : AppCompatActivity() {
         detector = GestureDetector(this, handler)
         detector.setOnDoubleTapListener(handler)
 
-        gameView = GameView(this, width, height, progressBar)
+        // ad view placeholder
+        val adHeight = (adSize.height * Resources.getSystem().displayMetrics.density).toInt()
+        val adPlaceholder = View(this)
+        adPlaceholder.setBackgroundColor(Color.BLACK)
+        adPlaceholder.id = View.generateViewId()
+        val adPlaceholderParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, adHeight)
+        adPlaceholderParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+
+        // start up text
+        startxt = TextView(this).apply {
+            text = """
+       - - Press anywhere to continue - -
+        
+        Caterpillars love leaves — give ‘em a leaf and watch ‘em grow!
+        
+        Use the slider above to set your speed. The faster you go, the fresher leaves you get!
+    """.trimIndent()
+            textSize = 24f
+            setTextColor(Color.WHITE)
+            setBackgroundColor(Color.parseColor("#AA000000")) // semi-transparent black background
+            gravity = Gravity.CENTER
+            id = View.generateViewId()
+        }
+        val startTextParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT)
+        startxt.layoutParams = startTextParams
+
+        gameView = GameView(this, width, height, progressBar, adHeight)
         gameView.isFocusable = true
         gameView.isFocusableInTouchMode = true
-
 
         caterpillar = gameView.getCaterpillar()
         mainLayout.addView(gameView)
         mainLayout.addView(progressBar)
         mainLayout.addView(seekBar)
+        mainLayout.addView(adPlaceholder,adPlaceholderParams)
         mainLayout.addView(adView, adParams)
+        mainLayout.addView(startxt)
         adView.loadAd(request)
 
+
+
         setContentView(mainLayout)
+        adView.post {
+            val actualAdHeight = adView.height
+            Log.w("DEBUG", "Actual ad height = $actualAdHeight")
+            caterpillar.setAdBoundary(gameView.height - actualAdHeight)
+        }
 
         var timer = Timer()
         task = GameTimerTask(this)
@@ -149,7 +186,16 @@ class MainActivity : AppCompatActivity() {
 
     inner class TouchHandler : GestureDetector.SimpleOnGestureListener() {
         override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            if (caterpillar.isGameOver()) {
+            if (startxt.visibility == View.VISIBLE) {
+                startxt.visibility = View.GONE
+                gameStart = true
+                gameView.postInvalidate()
+
+                val timer = Timer()
+                task = GameTimerTask(this@MainActivity)
+                timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
+
+            } else if (caterpillar.isGameOver()) {
                 caterpillar.reset()
                 gameView.resetPosition()
                 gameStart = true
