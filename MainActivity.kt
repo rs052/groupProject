@@ -71,8 +71,7 @@ class MainActivity : AppCompatActivity() {
         adParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
         var builder : AdRequest.Builder = AdRequest.Builder( )
         var request : AdRequest = builder.build()
-        mainLayout.addView(adView, adParams)
-        adView.loadAd(request)
+
 
         val seekBar = SeekBar(this)
         seekBar.max = 50
@@ -80,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         seekBar.isFocusable = false
         seekBar.isFocusableInTouchMode = false
         val seekBarParams = RelativeLayout.LayoutParams(500, 300)
-        seekBarParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        seekBarParams.addRule(RelativeLayout.BELOW)
         seekBarParams.addRule(RelativeLayout.CENTER_HORIZONTAL)
         seekBarParams.setMargins(0, 50, 0, 50)
         seekBar.layoutParams = seekBarParams
@@ -104,11 +103,17 @@ class MainActivity : AppCompatActivity() {
         detector.setOnDoubleTapListener(handler)
 
         gameView = GameView(this, width, height, progressBar)
+        gameView.isFocusable = true
+        gameView.isFocusableInTouchMode = true
+
 
         caterpillar = gameView.getCaterpillar()
         mainLayout.addView(gameView)
         mainLayout.addView(progressBar)
         mainLayout.addView(seekBar)
+        mainLayout.addView(adView, adParams)
+        adView.loadAd(request)
+
         setContentView(mainLayout)
 
         var timer = Timer()
@@ -224,18 +229,27 @@ class MainActivity : AppCompatActivity() {
 
         val input = EditText(this)
         builder.setView(input)
-
-        builder.setPositiveButton("Submit") { dialog, _ ->
-            val playerName = input.text.toString()
-            if (playerName.isNotEmpty()) {
-                leaderboard.child(playerName).setValue(score)
-
-                showEmailDialog(caterpillar.getLevel(), playerName) // ask for email if user enter name
-            }
+        builder.setPositiveButton("Submit", null)
+        builder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.dismiss()
+            fetchLeaderboardIntoLists()
         }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-        builder.show()
+
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                val playerName = input.text.toString()
+                if (playerName.isNotEmpty()) {
+                    leaderboard.child(playerName).setValue(score)
+                    showEmailDialog( caterpillar.getLevel(), playerName) // ask for email
+                } else {
+                    Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
+                    // Keep dialog open
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun fetchLeaderboardIntoLists() {

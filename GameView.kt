@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.Toast
 
 class GameView : View {
     private lateinit var paint : Paint
@@ -35,6 +36,7 @@ class GameView : View {
     private var by = ArrayList<Float>()
     // size of leaf
     private var leafSize : Int = 150
+    private var announced : Boolean = false
 
 
     constructor(context: Context, width: Int, height: Int, progressBar: ProgressBar) : super(context) {
@@ -57,6 +59,12 @@ class GameView : View {
 
     fun updateProgressBar() {
         progressBar.progress = caterpillar.getLevel()
+        if (progressBar.progress == progressBar.max && !announced) {
+            caterpillar.setBonus() // bonus points
+            caterpillar.setSpeed(caterpillar.getSpeed()) // bonus speed
+            Toast.makeText(context, "HotStreak x2 Bonus!", Toast.LENGTH_SHORT).show()
+            announced = !announced
+        }
     }
 
     // used this to set the size of the caterpillar bitmap
@@ -156,6 +164,7 @@ class GameView : View {
     }
 
     fun resetPosition() {
+        announced = !announced
         var x = width / 2 - headSize / 2
         var y = height / 2 - headSize / 2
         headRect.set(x, y, x + headSize, y + headSize)

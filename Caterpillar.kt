@@ -22,6 +22,9 @@ class Caterpillar {
     lateinit var pref : SharedPreferences
     private var bestLevel : Int = 0
 
+    private var bonus : Int = 1 // if progress bar x2 speed and levels
+    private var speedPoints : Int = 1 // level multiplication for increased speed
+
 
 
     constructor(context: Context, headRect : Rect, leafRect : Rect, width: Int, height: Int, rad : Float) {
@@ -42,10 +45,20 @@ class Caterpillar {
         headRect = Rect(newRect)
     }
 
-    fun setSpeed (newSpeed : Int ) {
-        speed = newSpeed
+    fun getSpeed () : Int {
+        return speed
     }
 
+    fun setSpeed (newSpeed : Int ) {
+        speed = newSpeed * bonus
+        speedMult()
+    }
+
+    fun speedMult() {
+        if (speed/10 >= 1) {
+            speedPoints = speed/10
+        }
+    }
 
     fun getLevel () : Int {
         return lvl
@@ -55,8 +68,13 @@ class Caterpillar {
         return bestLevel
     }
 
+    fun setBonus() {
+        bonus = 2
+    }
+
     fun increaseLevel () {
-        lvl++
+        lvl = lvl + (1 * bonus * speedPoints)
+        Log.w("MainActivity", "lvl = $lvl" )
     }
 
     fun getNewLeafPos () {
@@ -151,6 +169,9 @@ class Caterpillar {
 
     fun reset() {
         gameOver = false
+        lvl = 0
+        setSpeed(10)
+        bonus = 1
         getNewLeafPos()
         setDirection("up")
         Log.w("MainActivity", "reseting")
