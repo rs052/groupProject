@@ -25,14 +25,16 @@ class Caterpillar {
     private var bonus : Int = 1 // if progress bar x2 speed and levels
     private var speedPoints : Int = 1 // level multiplication for increased speed
 
+    private var adBoundary : Float = 0f
 
 
-    constructor(context: Context, headRect : Rect, leafRect : Rect, width: Int, height: Int, rad : Float) {
+    constructor(context: Context, headRect : Rect, leafRect : Rect, width: Int, height: Int, rad : Float, adHeight: Int) {
         pref = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
         this.headRect = headRect
         this.leafRect = leafRect
         this.screenWidth = width.toFloat()
         this.screenHeight = height.toFloat()
+        adBoundary = height.toFloat() - adHeight
         getNewLeafPos()
         this.rad = rad
         bx = ArrayList<Float>()
@@ -73,13 +75,13 @@ class Caterpillar {
     }
 
     fun increaseLevel () {
-        lvl = lvl + (1 * bonus * speedPoints)
+        lvl = lvl + (1 * bonus) + speedPoints
         Log.w("MainActivity", "lvl = $lvl" )
     }
 
     fun getNewLeafPos () {
         leafX = (20..screenWidth.toInt() - 150).random()
-        leafY = (20..screenHeight.toInt() - 150).random()
+        leafY = (20..adBoundary.toInt() - 150).random()
         leafRect.set(leafX, leafY, leafX + leafRect.width(), leafY + leafRect.height())
     }
 
@@ -125,7 +127,7 @@ class Caterpillar {
             headRect.offset(speed,0)
         }
 
-        if (headRect.left < 0 || headRect.right > screenWidth || headRect.bottom > screenHeight || headRect.top < 0) {
+        if (headRect.left < 0 || headRect.right > screenWidth || headRect.bottom > adBoundary || headRect.top < 0) {
             saveBestLevel()
             headRect.offset(0,0)
             gameOver = true
@@ -186,6 +188,10 @@ class Caterpillar {
             editor.putInt(PREFERENCE_LEVEL, lvl)
             editor.commit()
         }
+    }
+
+    fun setAdBoundary(boundary: Int) {
+        this.adBoundary = boundary.toFloat()
     }
 
     companion object {

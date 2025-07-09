@@ -39,7 +39,7 @@ class GameView : View {
     private var announced : Boolean = false
 
 
-    constructor(context: Context, width: Int, height: Int, progressBar: ProgressBar) : super(context) {
+    constructor(context: Context, width: Int, height: Int, progressBar: ProgressBar, adHeight : Int) : super(context) {
         paint = Paint()
         this.progressBar = progressBar
         paint.color = Color.BLACK
@@ -51,7 +51,7 @@ class GameView : View {
         leafBitmap = BitmapFactory.decodeResource(resources, R.drawable.leaf)
         leafRect = Rect(0,0,leafSize,leafSize)
         rad = headSize / 4f
-        caterpillar = Caterpillar(context, headRect, leafRect, width, height,rad)
+        caterpillar = Caterpillar(context, headRect, leafRect, width, height,rad, adHeight)
     }
 
     fun initCaterpillar() {
@@ -62,7 +62,7 @@ class GameView : View {
         if (progressBar.progress == progressBar.max && !announced) {
             caterpillar.setBonus() // bonus points
             caterpillar.setSpeed(caterpillar.getSpeed()) // bonus speed
-            Toast.makeText(context, "HotStreak x2 Bonus!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "CATERPILLAR FRENZY! X2 Bonus — Feed the Beast!", Toast.LENGTH_LONG).show()
             announced = !announced
         }
     }
