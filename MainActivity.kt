@@ -2,7 +2,9 @@ package com.example.groupproject
 
 import android.R
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -14,6 +16,7 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -33,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var leaderboard: DatabaseReference
     private lateinit var task: GameTimerTask
     private var dialog : Boolean = false
+    private var emailDialog : Boolean = false
     private lateinit var detector: GestureDetector
     private var gameStart : Boolean = false
 
@@ -116,6 +120,7 @@ class MainActivity : AppCompatActivity() {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event != null) {
             detector.onTouchEvent(event)
+
         }
         return super.onTouchEvent(event)
     }
@@ -157,6 +162,44 @@ class MainActivity : AppCompatActivity() {
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     }
 
+
+    private fun sendEmail(score : Int, playerName : String) {
+        var emailSubject : String = "Congratulations to $playerName on an Impressive game of Caterpillar"
+        var emailtxt : String = "$playerName reached level $score, " +
+                "with their personal best being level ${caterpillar.getBestScore()}. very impressive!"
+
+        var mIntent = Intent(Intent.ACTION_SEND)
+        mIntent.data = Uri.parse("mailto")
+        mIntent.type = "text/plain"
+
+
+        mIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject)
+        mIntent.putExtra(Intent.EXTRA_TEXT, emailtxt)
+
+        try {
+            startActivity(Intent.createChooser(mIntent, "Share using:"))
+            Log.w("MainActivity", "success")
+            fetchLeaderboardIntoLists()
+        } catch (ex: Exception) {
+            Log.e("MainActivity", "Failed to launch email intent", ex)
+        }
+    }
+
+    private fun showEmailDialog(score : Int, playerName : String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Share Score?")
+        builder.setMessage("Want to share your score so you can brag about it?")
+        builder.setPositiveButton("Yes, share it!") { dialog, _ ->
+            Log.w("MainActivity", "email time")
+            dialog.dismiss()
+            sendEmail(score, playerName)
+        }
+        builder.setNegativeButton("Nah, I'm good") { dialog, _ -> dialog.dismiss()
+            fetchLeaderboardIntoLists()
+        }
+        builder.show()
+    }
+
     private fun showGameOverDialog(score: Int) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Game Over!")
@@ -169,7 +212,8 @@ class MainActivity : AppCompatActivity() {
             val playerName = input.text.toString()
             if (playerName.isNotEmpty()) {
                 leaderboard.child(playerName).setValue(score)
-                fetchLeaderboardIntoLists()
+
+                 showEmailDialog(caterpillar.getLevel(), playerName) // ask for email if user enter name
             }
             dialog.dismiss()
         }
@@ -219,4 +263,3 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 }
-
