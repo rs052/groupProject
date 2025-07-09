@@ -289,6 +289,7 @@ class MainActivity : AppCompatActivity() {
                 if (playerName.isNotEmpty()) {
                     leaderboard.child(playerName).setValue(score)
                     showEmailDialog( caterpillar.getLevel(), playerName) // ask for email
+                    dialog.dismiss()
                 } else {
                     Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
                     // Keep dialog open
@@ -333,7 +334,6 @@ class MainActivity : AppCompatActivity() {
                 dialog = false
                 dialogN.dismiss()
                 gameStart = true
-
                 val timer = Timer()
                 task = GameTimerTask(this@MainActivity)
                 timer.schedule(task, 0L, GameView.DELTA_TIME.toLong())
